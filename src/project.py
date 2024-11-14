@@ -16,7 +16,13 @@ background_img = pygame.image.load('assets/background.png')
 coin_img = pygame.image.load('assets/coin.png')
 
 
-class Coin:
+
+coin_img = pygame.transform.scale(coin_img, (30, 30))
+
+
+
+
+class Coin():
 
     def __init__(self):
         self.image = coin_img
@@ -29,6 +35,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Mario Clone")
     clock = pygame.time.Clock()
+    screen.blit(background_img, (0, 0))
     pygame.quit()
 
 if __name__ == "__main__":
