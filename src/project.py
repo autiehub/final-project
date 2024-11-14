@@ -36,7 +36,13 @@ def main():
     pygame.display.set_caption("Mario Clone")
     clock = pygame.time.Clock()
     screen.blit(background_img, (0, 0))
+    screen.blit(player.image, player.rect)
+    for coin in coins:
+        screen.blit(coin.image, coin.rect)
+        pygame.display.flip()
+        clock.tick(FPS)
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
