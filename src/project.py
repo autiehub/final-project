@@ -12,11 +12,12 @@ FPS = 60
 WHITE = (255, 255, 255)
 
 
+mario_img = pygame.image.load('assets/mario.png')
 background_img = pygame.image.load('assets/background.png')
 coin_img = pygame.image.load('assets/coin.png')
 
 
-
+mario_img = pygame.transform.scale(mario_img, (50, 50))
 coin_img = pygame.transform.scale(coin_img, (30, 30))
 
 
