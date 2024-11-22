@@ -11,7 +11,7 @@ def main():
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Mario Clone")
-    background_img = pygame.image.load('assets/background.png').convert()
+    background_img = pygame.image.load('assets/background.png')
     background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT)).convert()
     while True:
         for event in pygame.event.get():
