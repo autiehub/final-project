@@ -27,7 +27,7 @@ class Coin():
         self.image = coin_img
         self.rect = self.image.get_rect
         self.rect.x = random.randint(50, WIDTH - 50)
-        self.rect.y = random.randint(100, WIDTH - 200)
+        self.rect.y = random.randint(100, HEIGHT - 200)
 
 
 def main():
