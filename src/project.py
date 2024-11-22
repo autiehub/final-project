@@ -9,11 +9,18 @@ HEIGHT = 1080
 def main():
     pygame.init()
     clock = pygame.time.Clock()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Mario Clone")
     background_img = pygame.image.load('assets/background.png')
     background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT)).convert()
-    while True:
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
