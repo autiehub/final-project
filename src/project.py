@@ -6,6 +6,15 @@ WIDTH = 1920
 HEIGHT = 1080
 
 
+class Coin():
+
+    def __init__(self, coin_img):
+        self.image = coin_img
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(50, WIDTH - 50)
+        self.rect.y = random.radint(100, HEIGHT - 200)
+
+
 def main():
     pygame.init()
     clock = pygame.time.Clock()
