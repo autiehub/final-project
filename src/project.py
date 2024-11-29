@@ -8,7 +8,7 @@ pygame.init()
 WIDTH = 1920
 HEIGHT = 1080
 
-
+sprite_sheet = pygame.image.load('assets/mario_sprite_sheet.png')
 background_img = pygame.image.load('assets/background.png')
 coin_img = pygame.image.load('assets/coin.png')
 
