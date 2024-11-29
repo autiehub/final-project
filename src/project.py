@@ -21,6 +21,22 @@ class Player():
     def __init__(self):
         self.image
 
+    def update(self):
+        self.rect.x += self.change_x
+        self.rect.y += self.change_y
+        if self.rect.y < SCREEN_HEIGHT - 50:
+            self.change_y += 1
+        else:
+            self.change_y = 0
+            self.rect.y = SCREEN_HEIGHT - 50
+
+    def jump(self):
+        if self.rect.y == SCREEN_HEIGHT - 50:
+            self.change_y = -20
+    
+    def move(self, x_change):
+        self.change_x = x_change
+
 
 class Coin():
 
