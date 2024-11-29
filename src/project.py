@@ -20,11 +20,20 @@ class Player():
 
     def __init__(self):
         self.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 100
+        self.rect.y = HEIGHT - 70
+        self.velocity_y = 0
+        self.on_ground = True
 
     def update(self):
         self.rect.y += self.velocity_y
         if not self.on_ground:
             self.velocity_y += 1
+        if self.rect.y >= HEIGHT - 70:
+            self.rect.y = HEIGHT - 70
+            self.velocity_y = 0
+            self.on_ground = True
 
     def jump(self):
         if self.on_ground:
