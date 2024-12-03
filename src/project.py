@@ -48,7 +48,7 @@ def main():
         coins.append(Coin(x, y))
     collected_coins = 0
     required_coins = 5
-    trophy_image = pygame.image.load('trophy.png')
+    trophy_image = pygame.image.load('assets/trophy.png')
     trophy_rect = trophy_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     running = True
     win = False
