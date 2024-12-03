@@ -84,7 +84,7 @@ class Cat(pygame.sprite.Sprite):
         elif self.state == "falling":
             self.current_frame = (self.current_frame + 1) % len(self.animations["falling"])
             self.image = self.animations["falling"][self.current_frame]
-        else:  # idle or hurt
+        else:
             self.current_frame = (self.current_frame + 1) % len(self.animations["idle"])
             self.image = self.animations["idle"][self.current_frame]
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
