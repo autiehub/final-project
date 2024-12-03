@@ -1,96 +1,95 @@
 import pygame
 import random
-import os
-
-
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Mario Clone")
-
-
-WHITE = (255, 255, 255)
-GREEN = (0, 128, 0)
-BLUE = (0, 0, 255)
-
-
-def load_image(name):
-    return pygame.image.load(os.path.join('assets', name))
-
-
-class Platform(pygame.sprite.Sprite):
-    
-    def __init__(self, x, y, width, height):
-        super().__init__()
-        self.rect = pygame.Rect(x, y, width, height)
-        self.image = pygame.Surface((width, height))
-        self.image.fill(GREEN)
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
-
-
-class Coin(pygame.sprite.Sprite):
-    
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = load_image('coin.png')
-        self.image = pygame.transform.scale(self.image, (30, 30))
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
 
 
 class Cat(pygame.sprite.Sprite):
     
-    def __init__(self, x, y):
+    def __init__(self):
         super().__init__()
-        self.x = x
-        self.y = y
-        self.velocity = [0, 0]  
-        self.state = "idle"
         self.animations = {
-            "idle": self.load_frames("idle"),
-            "jumping": self.load_frames("jumping"),
-            "running": self.load_frames("running"),
-            "hurt": self.load_frames("hurt"),
-            "falling": self.load_frames("falling")
+            "idle": [pygame.image.load(f'assets/cat_idle{i}.png') for i in range(1, 3)],
+            "run": [pygame.image.load(f'assets/cat_run{i}.png') for i in range(1, 3)],
+            "jump": [pygame.image.load(f'assets/cat_jump{i}.png') for i in range(1, 3)],
+            "fall": [pygame.image.load(f'assets/cat_fall{i}.png') for i in range(1, 3)],
+            "hurt": [pygame.image.load(f'assets/cat_hurt{i}.png') for i in range(1, 3)]
         }
+        self.state = "idle"
         self.current_frame = 0
-        self.image = self.animations["idle"][self.current_frame]
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        self.image = self.animations[self.state][self.current_frame]
+        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = self.image.get_rect(topleft=(300, 500))
+        self.velocity = [0, 0] 
+        self.on_ground = False
+        self.frame_timer = 0  
+    
+    def update(self, screen_width, screen_height):
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        if not self.on_ground:
+            self.velocity[1] += 1
+        self.rect.x = max(0, min(screen_width - self.rect.width, self.rect.x))
+        self.rect.y = min(screen_height - self.rect.height, self.rect.y)
+        if self.rect.y >= screen_height - self.rect.height:
+            self.rect.y = screen_height - self.rect.height
+            self.velocity[1] = 0
+            self.on_ground = True
+        self.update_state()
+        self.animate()
 
-    def load_frames(self, action):
-        """Load frames for a specific action."""
-        frames = []
-        frame_index = 1
-        while True:
-            frame_name = f'assets/cat/{action}_{frame_index}.png'
-            if os.path.exists(frame_name):
-                frames.append(pygame.image.load(frame_name))
-                frame_index += 1
-            else:
-                break
-        return frames
+    def update_state(self):
+        if self.velocity[1] > 0 and not self.on_ground:
+            self.state = "fall"
+        elif self.velocity[1] < 0 and not self.on_ground:
+            self.state = "jump"
+        elif self.velocity[0] != 0 and self.on_ground:
+            self.state = "run"
+        elif self.on_ground:
+            self.state = "idle"
 
-    def update(self):
-        """Update the animation frame based on state."""
-        if self.state == "running":
-            self.current_frame = (self.current_frame + 1) % len(self.animations["running"])
-            self.image = self.animations["running"][self.current_frame]
-        elif self.state == "jumping":
-            self.current_frame = (self.current_frame + 1) % len(self.animations["jumping"])
-            self.image = self.animations["jumping"][self.current_frame]
-        elif self.state == "falling":
-            self.current_frame = (self.current_frame + 1) % len(self.animations["falling"])
-            self.image = self.animations["falling"][self.current_frame]
-        else:
-            self.current_frame = (self.current_frame + 1) % len(self.animations["idle"])
-            self.image = self.animations["idle"][self.current_frame]
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
+    def animate(self):
+        self.frame_timer += 1
+        if self.frame_timer >= 10:
+            self.frame_timer = 0
+            self.current_frame = (self.current_frame + 1) % len(self.animations[self.state])
+            self.image = self.animations[self.state][self.current_frame]
+            self.image = pygame.transform.scale(self.image, (50, 50))
+
+    def jump(self):
+        if self.on_ground:
+            self.velocity[1] = -15
+            self.on_ground = False
+
+    def move_left(self):
+        self.velocity[0] = -5 
+
+    def move_right(self):
+        self.velocity[0] = 5
+
+    def stop(self):
+        self.velocity[0] = 0
+
+    def hurt(self):
+        self.state = "hurt"
+        print("Cat is hurt!")
+
+
+class Platform():
+    
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height)
 
     def draw(self, screen):
-        """Draw the cat on the screen."""
+        pygame.draw.rect(screen, (0, 128, 0), self.rect)
+
+
+class Coin():
+    
+    def __init__(self, x, y):
+        self.image = pygame.image.load('assets/coin.png')
+        self.image = pygame.transform.scale(self.image, (30, 30))
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def draw(self, screen):
         screen.blit(self.image, self.rect)
 
 
@@ -146,23 +145,24 @@ def load_level(level_num):
 
 def main():
     pygame.init()
+    WIDTH, HEIGHT = 800, 600
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Mario Clone")
     clock = pygame.time.Clock()
-    cat = Cat(WIDTH // 2, HEIGHT // 2)
-    cat_group = pygame.sprite.Group()
-    cat_group.add(cat)
+    FPS = 60
+    cat = Cat()
     current_level = 1
     platforms, coins = load_level(current_level)
     collected_coins = 0
     required_coins = 3
-    background_images = {
-        1: load_image('background1.png'),
-        2: load_image('background2.png'),
-        3: load_image('background3.png'),
-        4: load_image('background4.png')
+    backgrounds = {
+        1: pygame.image.load('assets/background1.png'),
+        2: pygame.image.load('assets/background2.png'),
+        3: pygame.image.load('assets/background3.png'),
+        4: pygame.image.load('assets/background4.png')
     }
-
-    for level in background_images:
-        background_images[level] = pygame.transform.scale(background_images[level], (WIDTH, HEIGHT))
+    for level, bg in backgrounds.items():
+        backgrounds[level] = pygame.transform.scale(bg, (WIDTH, HEIGHT))
     running = True
     while running:
         for event in pygame.event.get():
@@ -170,51 +170,44 @@ def main():
                 running = False
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            cat.state = "running"
-            cat.x -= 5
+            cat.move_left()
         elif keys[pygame.K_RIGHT]:
-            cat.state = "running"
-            cat.x += 5
+            cat.move_right()
         else:
-            cat.state = "idle"
-        if keys[pygame.K_SPACE]:
-            if cat.velocity[1] == 0:
-                cat.velocity[1] = -15 
-        cat.velocity[1] += 1  
-        cat.y += cat.velocity[1]
-        if cat.y > HEIGHT - 100:
-            cat.y = HEIGHT - 100
-            cat.velocity[1] = 0
+            cat.stop()
+        if keys[pygame.K_UP]:
+            cat.jump()
+        cat.update(WIDTH, HEIGHT)
+        cat.on_ground = False
         for platform in platforms:
             if cat.rect.colliderect(platform.rect):
-                if cat.velocity[1] > 0 and cat.rect.bottom >= platform.rect.top:
-                    cat.y = platform.rect.top - 50
+                if cat.velocity[1] > 0:
+                    cat.rect.bottom = platform.rect.top
                     cat.velocity[1] = 0
+                    cat.on_ground = True
         for coin in coins[:]:
             if cat.rect.colliderect(coin.rect):
                 coins.remove(coin)
                 collected_coins += 1
+                print(f"Collected coins: {collected_coins}")
         if collected_coins >= required_coins:
-            if current_level < 4:
-                current_level += 1
-                platforms, coins = load_level(current_level)
-                collected_coins = 0
-            else:
-                print("You win!")
+            collected_coins = 0
+            current_level += 1
+            if current_level > 4:
+                print("You Win!")
                 running = False
-        screen.fill(WHITE)
-        screen.blit(background_images[current_level], (0, 0))
+            else:
+                platforms, coins = load_level(current_level)
+        screen.blit(backgrounds[current_level], (0, 0))
+        screen.blit(cat.image, cat.rect)
         for platform in platforms:
             platform.draw(screen)
         for coin in coins:
             coin.draw(screen)
-        cat_group.draw(screen)
-        font = pygame.font.SysFont(None, 36)
-        coin_text = font.render(f'Coins: {collected_coins}', True, BLUE)
-        screen.blit(coin_text, (10, 10))
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS)
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
