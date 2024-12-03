@@ -1,8 +1,6 @@
 import pygame
+import random
 import os
-
-
-pygame.init()
 
 
 WIDTH, HEIGHT = 800, 600
@@ -35,7 +33,7 @@ class Coin(pygame.sprite.Sprite):
     
     def __init__(self, x, y):
         super().__init__()
-        self.image = load_image('coin.png') 
+        self.image = load_image('coin.png')
         self.image = pygame.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect(topleft=(x, y))
 
@@ -49,7 +47,7 @@ class Cat(pygame.sprite.Sprite):
         super().__init__()
         self.x = x
         self.y = y
-        self.velocity = [0, 0] 
+        self.velocity = [0, 0]  
         self.state = "idle"
         self.animations = {
             "idle": self.load_frames("idle"),
@@ -86,10 +84,9 @@ class Cat(pygame.sprite.Sprite):
         elif self.state == "falling":
             self.current_frame = (self.current_frame + 1) % len(self.animations["falling"])
             self.image = self.animations["falling"][self.current_frame]
-        else:
+        else:  # idle or hurt
             self.current_frame = (self.current_frame + 1) % len(self.animations["idle"])
             self.image = self.animations["idle"][self.current_frame]
-
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
 
     def draw(self, screen):
@@ -148,6 +145,7 @@ def load_level(level_num):
 
 
 def main():
+    pygame.init()
     clock = pygame.time.Clock()
     cat = Cat(WIDTH // 2, HEIGHT // 2)
     cat_group = pygame.sprite.Group()
@@ -162,6 +160,7 @@ def main():
         3: load_image('background3.png'),
         4: load_image('background4.png')
     }
+
     for level in background_images:
         background_images[level] = pygame.transform.scale(background_images[level], (WIDTH, HEIGHT))
     running = True
@@ -179,9 +178,9 @@ def main():
         else:
             cat.state = "idle"
         if keys[pygame.K_SPACE]:
-            if cat.velocity[1] == 0:  
+            if cat.velocity[1] == 0:
                 cat.velocity[1] = -15 
-        cat.velocity[1] += 1 
+        cat.velocity[1] += 1  
         cat.y += cat.velocity[1]
         if cat.y > HEIGHT - 100:
             cat.y = HEIGHT - 100
@@ -216,7 +215,6 @@ def main():
         pygame.display.flip()
         clock.tick(60)
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
