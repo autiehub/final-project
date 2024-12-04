@@ -7,60 +7,81 @@ class Cat(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.animations = {
-            "idle": [pygame.image.load(f'assets/cat_idle{i}.png') for i in range(1, 3)],
-            "run": [pygame.image.load(f'assets/cat_run{i}.png') for i in range(1, 3)],
-            "jump": [pygame.image.load(f'assets/cat_jump{i}.png') for i in range(1, 3)],
-            "fall": [pygame.image.load(f'assets/cat_fall{i}.png') for i in range(1, 3)],
-            "hurt": [pygame.image.load(f'assets/cat_hurt{i}.png') for i in range(1, 3)]
+            "idle": [pygame.transform.scale(pygame.image.load(f'assets/cat_idle{i}.png'), (50, 50)) for i in range(1, 3)],
+            "run": [pygame.transform.scale(pygame.image.load(f'assets/cat_run{i}.png'), (50, 50)) for i in range(1, 3)],
+            "jump": [pygame.transform.scale(pygame.image.load(f'assets/cat_jump{i}.png'), (50, 50)) for i in range(1, 3)],
+            "fall": [pygame.transform.scale(pygame.image.load(f'assets/cat_fall{i}.png'), (50, 50)) for i in range(1, 3)],
+            "hurt": [pygame.transform.scale(pygame.image.load(f'assets/cat_hurt{i}.png'), (50, 50)) for i in range(1, 3)]
         }
         self.state = "idle"
         self.current_frame = 0
         self.image = self.animations[self.state][self.current_frame]
-        self.image = pygame.transform.scale(self.image, (50, 50))
-        self.rect = self.image.get_rect(topleft=(300, 500))
+        self.rect = self.image.get_rect(topleft=(300, 450))
         self.velocity = [0, 0] 
         self.on_ground = False
-        self.frame_timer = 0  
+        self.frame_timer = 0
+        self.animation_lock = False
+        self.lock_timer = 0
     
-    def update(self, screen_width, screen_height):
+    def update(self, screen_width, screen_height, platforms):
         self.rect.x += self.velocity[0]
         self.rect.y += self.velocity[1]
         if not self.on_ground:
-            self.velocity[1] += 1
+            self.velocity[1] += 1 
         self.rect.x = max(0, min(screen_width - self.rect.width, self.rect.x))
         self.rect.y = min(screen_height - self.rect.height, self.rect.y)
         if self.rect.y >= screen_height - self.rect.height:
             self.rect.y = screen_height - self.rect.height
             self.velocity[1] = 0
             self.on_ground = True
-        self.update_state()
+        self.on_ground = self.check_collision(platforms)
+        if self.animation_lock:
+            self.lock_timer += 1
+            if self.lock_timer > 20:
+                self.animation_lock = False
+                self.lock_timer = 0
+        if not self.animation_lock:
+            self.update_state()
         self.animate()
 
+    def check_collision(self, platforms):
+        self.on_ground = False
+        for platform in platforms:
+            if self.rect.colliderect(platform.rect):
+                if self.velocity[1] > 0:  
+                    self.rect.bottom = platform.rect.top
+                    self.velocity[1] = 0
+                    self.on_ground = True
+                elif self.velocity[1] < 0:
+                    self.rect.top = platform.rect.bottom
+                    self.velocity[1] = 0
+        return self.on_ground
+
     def update_state(self):
-        if self.velocity[1] > 0 and not self.on_ground:
+        if self.velocity[1] > 2 and not self.on_ground: 
             self.state = "fall"
-        elif self.velocity[1] < 0 and not self.on_ground:
+        elif self.velocity[1] < -2 and not self.on_ground:  
             self.state = "jump"
         elif self.velocity[0] != 0 and self.on_ground:
             self.state = "run"
-        elif self.on_ground:
+        elif self.on_ground and self.velocity == [0, 0]:
             self.state = "idle"
 
     def animate(self):
         self.frame_timer += 1
-        if self.frame_timer >= 10:
+        if self.frame_timer >= 10: 
             self.frame_timer = 0
             self.current_frame = (self.current_frame + 1) % len(self.animations[self.state])
             self.image = self.animations[self.state][self.current_frame]
-            self.image = pygame.transform.scale(self.image, (50, 50))
 
     def jump(self):
-        if self.on_ground:
+        if self.on_ground and not self.animation_lock:
             self.velocity[1] = -15
             self.on_ground = False
+            self.animation_lock = True  
 
     def move_left(self):
-        self.velocity[0] = -5 
+        self.velocity[0] = -5
 
     def move_right(self):
         self.velocity[0] = 5
@@ -98,47 +119,47 @@ def load_level(level_num):
     coins = []
     if level_num == 1:
         platforms = [
-            Platform(100, 500, 200, 20),
-            Platform(300, 400, 200, 20),
-            Platform(500, 300, 200, 20)
+            Platform(100, 450, 200, 20),
+            Platform(300, 350, 200, 20),
+            Platform(500, 250, 200, 20)
         ]
         coins = [
-            Coin(150, 480),
-            Coin(350, 380),
-            Coin(550, 280)
+            Coin(150, 430),
+            Coin(350, 330),
+            Coin(550, 230)
         ]
     elif level_num == 2:
         platforms = [
-            Platform(150, 550, 250, 20),
-            Platform(400, 400, 250, 20),
-            Platform(600, 250, 250, 20)
+            Platform(150, 450, 250, 20),
+            Platform(400, 300, 250, 20),
+            Platform(600, 150, 250, 20)
         ]
         coins = [
-            Coin(180, 530),
-            Coin(430, 380),
-            Coin(630, 230)
+            Coin(180, 430),
+            Coin(430, 280),
+            Coin(630, 130)
         ]
     elif level_num == 3:
         platforms = [
-            Platform(100, 500, 300, 20),
-            Platform(450, 350, 250, 20),
-            Platform(600, 200, 300, 20)
+            Platform(100, 450, 300, 20),
+            Platform(450, 300, 250, 20),
+            Platform(600, 150, 300, 20)
         ]
         coins = [
-            Coin(150, 480),
-            Coin(470, 330),
-            Coin(650, 180)
+            Coin(150, 430),
+            Coin(470, 280),
+            Coin(650, 130)
         ]
     elif level_num == 4:
         platforms = [
-            Platform(50, 550, 300, 20),
-            Platform(350, 400, 300, 20),
-            Platform(600, 250, 300, 20)
+            Platform(50, 450, 300, 20),
+            Platform(350, 300, 300, 20),
+            Platform(600, 150, 300, 20)
         ]
         coins = [
-            Coin(80, 530),
-            Coin(380, 380),
-            Coin(610, 230)
+            Coin(80, 430),
+            Coin(380, 280),
+            Coin(610, 130)
         ]
     return platforms, coins
 
@@ -155,14 +176,19 @@ def main():
     platforms, coins = load_level(current_level)
     collected_coins = 0
     required_coins = 3
-    backgrounds = {
-        1: pygame.image.load('assets/background1.png'),
-        2: pygame.image.load('assets/background2.png'),
-        3: pygame.image.load('assets/background3.png'),
-        4: pygame.image.load('assets/background4.png')
-    }
-    for level, bg in backgrounds.items():
-        backgrounds[level] = pygame.transform.scale(bg, (WIDTH, HEIGHT))
+    backgrounds = {}
+    for i in range(1, 5):
+        try:
+            bg = pygame.image.load(f'assets/background{i}.png')
+            backgrounds[i] = pygame.transform.scale(bg, (WIDTH, HEIGHT))
+        except pygame.error:
+            print(f"Error loading background{i}.png")
+            backgrounds[i] = pygame.Surface((WIDTH, HEIGHT))
+            backgrounds[i].fill((0, 0, 0))
+    initial_platform = platforms[0]
+    cat.rect.midbottom = initial_platform.rect.midtop
+    cat.velocity[1] = 0
+    cat.on_ground = True
     running = True
     while running:
         for event in pygame.event.get():
@@ -175,16 +201,9 @@ def main():
             cat.move_right()
         else:
             cat.stop()
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_SPACE]:
             cat.jump()
-        cat.update(WIDTH, HEIGHT)
-        cat.on_ground = False
-        for platform in platforms:
-            if cat.rect.colliderect(platform.rect):
-                if cat.velocity[1] > 0:
-                    cat.rect.bottom = platform.rect.top
-                    cat.velocity[1] = 0
-                    cat.on_ground = True
+        cat.update(WIDTH, HEIGHT, platforms)
         for coin in coins[:]:
             if cat.rect.colliderect(coin.rect):
                 coins.remove(coin)
@@ -198,7 +217,12 @@ def main():
                 running = False
             else:
                 platforms, coins = load_level(current_level)
-        screen.blit(backgrounds[current_level], (0, 0))
+                initial_platform = platforms[0]
+                cat.rect.midbottom = initial_platform.rect.midtop
+                cat.velocity[1] = 0
+                cat.on_ground = True
+        if current_level <= 4:
+            screen.blit(backgrounds[current_level], (0, 0))
         screen.blit(cat.image, cat.rect)
         for platform in platforms:
             platform.draw(screen)
